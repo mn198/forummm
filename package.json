@@ -1,0 +1,25 @@
+{
+  "name": "forum",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "faker": "^4.1.0",
+    "is-hotkey": "^0.1.6",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.27.0",
+    "mongoose": "^5.9.20",
+    "slate": "^0.58.3",
+    "slate-history": "^0.58.3",
+    "slate-react": "^0.58.3",
+    "slugify": "^1.4.4"
+  }
+}
