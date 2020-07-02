@@ -9,9 +9,10 @@ import Grid from '@material-ui/core/Grid';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import FavoriteIcon from '@material-ui/icons/Favorite';
 
+import NewComment from './NewComment';
+import Comment from './Comment';
+import LikeButton from './LikeButton';
 // 3rd party
 import axios from 'axios';
 import SlateViewport from './SlateViewport';
@@ -34,8 +35,8 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(2)
   },
   bigAvatar: {
-    width: '90%',
-    height: 'auto',
+    width: theme.spacing(6),
+    height: theme.spacing(6)
   },
   smallAvatar: {
     width: theme.spacing(4),
@@ -47,20 +48,19 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const img = "https://previews.123rf.com/images/pandavector/pandavector1609/pandavector160900800/63731494-man-with-beard-icon-cartoon-single-avatar-peaople-icon-from-the-big-avatar-collection-.jpg";
+//const img = "https://previews.123rf.com/images/pandavector/pandavector1609/pandavector160900800/63731494-man-with-beard-icon-cartoon-single-avatar-peaople-icon-from-the-big-avatar-collection-.jpg";
 
 function Post() {
   const classes = useStyles();
   let {slug, id} = useParams();
-  //const [data, setData] = useState(null);
+
   const { thread, dispatch } = useContext(threadContext);
 
   useEffect(() => {
     axios.get('/t/'+ slug + '/' + id)
     .then((result) => {
-      console.log(result.data)
-      dispatch({ type: 'GET_THREAD', payload: result.data})
-      // setData(result.data);
+      if(result.data !== null)
+        dispatch({ type: 'GET_THREAD', payload: result.data})
     })
     .catch(err => console.log(err));
   }, [slug, id])
@@ -85,6 +85,32 @@ function Post() {
     }
   });
 
+  const uniqueUser = (posts, author) => {
+    var data = new Set();
+    data.add(author);
+    for(var i = 0; i < posts.length; ++i)
+      data.add(posts[i].userId.username);
+    return(
+      Array.from(data).slice(Math.max(data.length-5, 0)).map((d, i) => 
+            <Avatar key={i} variant="circle" className={classes.smallAvatar} style={{display: 'inline-grid'}}>
+              {d[0].toUpperCase()}
+            </Avatar>)
+    )
+  }
+
+  const uniqueUserNum = (posts, author) => {
+    var data = new Set();
+    data.add(author);
+    for(var i = 0; i < posts.length; ++i)
+      data.add(posts[i].userId.username);
+    return data.size.toString();
+  }
+
+  const lastReply = (posts, created) => {
+    var p = posts[posts.length-1]
+    return p !== undefined ? p.createdAt : created;
+  }
+
   return (
     <div>
     { thread.isLoading ? '': 
@@ -101,7 +127,7 @@ function Post() {
           <Grid item lg={8}>
             <Grid container>
               <Grid item lg={1} xs={1}>
-                <Avatar variant="square" className={classes.bigAvatar} src={img}></Avatar>
+                <Avatar variant="circle" className={classes.bigAvatar} >{thread.thread.author.username[0].toUpperCase()}</Avatar>
               </Grid>
               <Grid item lg={11} xs={11}>
                 <Grid container direction="row" justify="space-between" alignItems="center">
@@ -113,10 +139,7 @@ function Post() {
                 </Grid>
                 <Grid container justify="flex-end" alignItems="center" className={classes.mt2}>
                   <Grid item>
-                    <IconButton>
-                      <Typography>{thread.thread.likes.length}</Typography>
-                      <FavoriteIcon color="secondary" />
-                    </IconButton>
+                    <LikeButton likes={thread.thread.likes} threadId={thread.thread._id}/>
                   </Grid>
                   <Grid item><Typography>share</Typography></Grid>
                 </Grid>
@@ -125,15 +148,21 @@ function Post() {
                       <Grid item lg={2} xs={3}>
                         <Typography>created</Typography>
                         <Grid container alignItems="center">
-                          <Avatar src={img} variant="square" className={classes.smallAvatar} style={{display: 'inline-grid'}}></Avatar>
+                          <Avatar variant="circle" className={classes.smallAvatar} style={{display: 'inline-grid'}}>
+                          {thread.thread.author.username[0].toUpperCase()}
+                          </Avatar>
                           <Typography style={{display: 'inline'}}>{moment(thread.thread.createdAt).fromNow()}</Typography>
                         </Grid>
                       </Grid>
                       <Grid item lg={2} xs={3}>
                         <Typography>last reply</Typography>
                         <Grid container alignItems="center">
-                          <Avatar src={img} variant="square" className={classes.smallAvatar} style={{display: 'inline-grid'}}></Avatar>
-                          <Typography style={{display: 'inline'}}>Oct'19</Typography>
+                          <Avatar variant="circle" className={classes.smallAvatar} style={{display: 'inline-grid'}}>
+                          {thread.thread.author.username[0].toUpperCase()}
+                          </Avatar>
+                          <Typography style={{display: 'inline'}}>
+                            {moment(lastReply(thread.thread.posts, thread.thread.createdAt)).fromNow()}
+                          </Typography>
                         </Grid>
                       </Grid>
                       <Grid item lg={1} xs={3}>
@@ -141,11 +170,11 @@ function Post() {
                         <Typography align="center">replies</Typography>
                       </Grid>
                       <Grid item lg={1} xs={2}>
-                        <Typography variant="h6" align="center">?</Typography>
+                        <Typography variant="h6" align="center">{thread.thread.viewCount}</Typography>
                         <Typography align="center">views</Typography>
                       </Grid>
                       <Grid item lg={1} xs={2}>
-                        <Typography variant="h6" align="center">?</Typography>
+                        <Typography variant="h6" align="center">{uniqueUserNum(thread.thread.posts, thread.thread.author.username)}</Typography>
                         <Typography align="center">users</Typography>
                       </Grid>
                       <Grid item lg={1} xs={2}>
@@ -153,9 +182,7 @@ function Post() {
                         <Typography align="center">likes</Typography>
                       </Grid>
                       <Grid item lg={4}>
-                        <Avatar src={img} variant="square" className={classes.smallAvatar} style={{display: 'inline-grid'}}/>
-                        <Avatar src={img} variant="square" className={classes.smallAvatar} style={{display: 'inline-grid'}}/>
-                        <Avatar src={img} variant="square" className={classes.smallAvatar} style={{display: 'inline-grid'}}/>
+                      {uniqueUser(thread.thread.posts, thread.thread.author.username)}
                       </Grid>
                   </Grid>
                 </Paper>
@@ -165,7 +192,8 @@ function Post() {
           </Grid>
           <Grid item lg={4}></Grid>
         </Grid>
-
+        <Comment/>
+        <NewComment/>
       </Container>
     }
     </div>

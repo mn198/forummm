@@ -25,7 +25,7 @@ function App() {
           <ThreadContextProvider>
             <Route path='/t/:slug/:id' component={() => <Layout component={Post}/>}/>
           </ThreadContextProvider>
-          <PrivateRoute path='/t/new' component={() => <Layout component={NewThread}/>}/>
+          <PrivateRoute exact path='/t/new' component={() => <Layout component={NewThread}/>}/>
         </AuthContextProvider>
       </Switch>
     </Router>

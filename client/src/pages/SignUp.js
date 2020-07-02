@@ -51,9 +51,13 @@ export default function SignUp() {
       if(!result.data.errors){
         const { accessToken } = result.data;
         const user = jwt_decode(accessToken);
-        localStorage.setItem('jwtToken', accessToken);
+        localStorage.setItem('jwtToken', accessToken);  
         setAuthToken(accessToken);
-        dispatch({ type: 'LOGIN', payload: user})
+        setInfo({variant: 'success', message: 'Complete registration'})
+        setSnackbar(true)
+        setTimeout(() => {
+          dispatch({ type: 'LOGIN', payload: user})
+        }, 1000);
       } else {
         setInfo({variant: 'error', message: result.data.errors})
         setSnackbar(true)

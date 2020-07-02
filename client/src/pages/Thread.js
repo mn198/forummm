@@ -94,6 +94,18 @@ function Thread() {
     window.location.href = "/t/new";
   }
 
+  const uniqueUser = (posts, author) => {
+    var data = new Set();
+    data.add(author);
+    for(var i = 0; i < posts.length; ++i)
+      data.add(posts[i].userId.username);
+    return(
+      Array.from(data).slice(Math.max(data.length-5, 0)).map((d, i) => 
+          <Grid item key={i}><Avatar variant="rounded" className={classes.color}>{d[0].toUpperCase()}</Avatar></Grid>)
+    )
+
+  } 
+
   useEffect(() => {
     axios.get('/t')
     .then((res) => {
@@ -117,15 +129,15 @@ function Thread() {
         <Grid container className={classes.mt4}>
           <Grid item lg={8}>
             <Grid container spacing={1}>
-              <Grid item><Button variant="outlined" color="primary">new</Button></Grid>
+              {/* <Grid item><Button variant="outlined" color="primary">new</Button></Grid>
               <Grid item><Button variant="outlined">top</Button></Grid>
-              <Grid item><Button variant="outlined">reply</Button></Grid>
+              <Grid item><Button variant="outlined">reply</Button></Grid> */}
             </Grid>
           </Grid>
           <Grid item lg={4}>
             <Button className={classes.right} variant="contained" color="secondary" 
             onClick={auth.isAuthenticated ? redirect: handleOpen}>
-              login to post
+              new thread
             </Button>
             <UserDialog open={openLoginDialog} handleClose={handleClose}/>
           </Grid>
@@ -165,9 +177,8 @@ function Thread() {
               </Grid>
               <Grid item lg={2} xs={1}>
                 <Grid container spacing={1}>
-                  <Grid item><Avatar variant="rounded" className={classes.color}>A</Avatar></Grid>
                   <Hidden only="xs">
-                    { d.posts.map((d, i) => <Grid item key={i}><Avatar variant="rounded" className={classes.color}>A</Avatar></Grid>) }
+                    {  uniqueUser(d.posts, d.author.username) }
                   </Hidden>
                 </Grid>
               </Grid>
@@ -176,7 +187,7 @@ function Thread() {
               </Grid>
               <Hidden only="xs">
                 <Grid item lg={1} xs={1}>
-                  <Typography className={classes.topicNum}>?</Typography>
+                  <Typography className={classes.topicNum}>{d.viewCount}</Typography>
                 </Grid>
               </Hidden>
               <Grid item lg={1} xs={2}>

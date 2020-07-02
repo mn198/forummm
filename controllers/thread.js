@@ -11,8 +11,9 @@ const list = (req, res) => {
     
 }
 
-const get = (req, res) => {
-    ThreadModel.get(req.params.slug, req.params.id)
+const read = (req, res) => {
+    ThreadModel.read(req.params.slug, req.params.id)
+    
     .then(result => res.status(200).send(JSON.stringify(result)))
     .catch((err) => {
         res.status(403).send(JSON.stringify(err));
@@ -42,8 +43,17 @@ const create = (req, res) => {
     });
 }
 
+const like = (req, res) => {
+    ThreadModel.like(req.body.threadId, req.body.userId)
+    .then(result => res.status(200).send({success: 'liked'}))
+    .catch(err => {
+        res.status(200).send({errors: 'Missing some fields'})
+        console.log(err)
+    })
+}
 module.exports = {
     create,
     list,
-    get
+    read,
+    like
 }

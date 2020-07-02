@@ -3,12 +3,12 @@ const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
     content: { type: String },
-    likeCount: { type: Number, default: 0 },
     editCount: { type: Number, default: 0 },
     removed: { type: Boolean, default: false },
-    replyTo: { type: Schema.Types.ObjectId, ref: 'user', default: null },
-    likes: [{ type: Schema.Types.ObjectId, ref: 'user' }],
-    thread: { type: Schema.Types.ObjectId, ref: 'thread'}
+    replyTo: { type: Schema.Types.ObjectId, ref: 'user', default: null},
+    userId: { type: Schema.Types.ObjectId, ref: 'user'},
+    likes: [{ type: Schema.Types.ObjectId, ref: 'user', default: null}],
+    threadId: { type: Schema.Types.ObjectId, ref: 'thread'}
 }, { timestamps: true })
 
 const Post = mongoose.model('post', PostSchema);
@@ -36,8 +36,19 @@ const remove = (postId) => {
     })
 }
 
+const like = (postId, userId) => {
+    return new Promise((resolve, reject) => {
+        Post.findByIdAndUpdate(postId, { $push: {likes: userId}}, (err, updatedPost) => {
+            if(err) reject(err);
+            resolve(updatedPost);
+        })
+    })
+}
+
 module.exports = {
+    Post,
     create,
     update,
-    remove
+    remove,
+    like
 }

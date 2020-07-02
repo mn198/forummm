@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const UserModel = require('./user').User;
 const CategoryModel = require('./category').Category;
+const PostModel = require('./post').Post;
 const Schema = mongoose.Schema;
 
 const ThreadSchema = new Schema({
@@ -9,6 +10,7 @@ const ThreadSchema = new Schema({
     slug: { type: String, required: true },
     published: { type: Boolean, default: false },
     removed: { type: Boolean, default: false},
+    viewCount: { type: Number, default: 0},
     author: { type: Schema.Types.ObjectId, ref: 'user', required: true },
     posts: [{ type: Schema.Types.ObjectId, ref: 'post'}],
     likes: [{ type: Schema.Types.ObjectId, ref: 'user'}],
@@ -23,6 +25,7 @@ const list = () => {
         .select('-content -published -removed')
         .populate({ path: 'author', select: 'username -_id'})
         .populate({ path: 'category', select: 'name color -_id'})
+        .populate({ path: 'posts', select: 'userId -_id', populate: { path: 'userId', select: 'username -_id'}})
         .sort('-createdAt')
         .exec((err, threads) => {
             if(err) reject(err);
@@ -31,12 +34,13 @@ const list = () => {
     })
 }
 
-const get = (slug, threadId) => {
+const read = (slug, threadId) => {
     return new Promise((resolve, reject) => {
-        Thread.findOne({slug: slug, _id: threadId})
+        Thread.findOneAndUpdate({slug: slug, _id: threadId}, { $inc: {'viewCount': 1}})
         .select('-published -removed')
         .populate({ path: 'author', select: 'username -_id'})
         .populate({ path: 'category', select: 'name color -_id'})
+        .populate({ path: 'posts', populate: { path: 'userId', select: 'username -_id'}})
         .exec((err, thread) => {
             if(err) reject(err);
             resolve(thread)
@@ -48,16 +52,6 @@ const create = (threadData) => {
     var thr = new Thread(threadData);
     return thr.save();
 }
-
-const read = (threadId) => {
-    return new Promise((resolve, reject) => {
-        Thread.findById(threadId, (err, thread) => {
-            if(err) reject(err);
-            resolve(thread);
-        })
-    })
-}
-
 
 const update = (threadId, threadData) => {
     return new Promise((resolve, reject) => {
@@ -96,8 +90,8 @@ const unlike = (threadId, userId) => {
 }
 
 module.exports = {
+    Thread,
     list,
-    get,
     create,
     read,
     update,
