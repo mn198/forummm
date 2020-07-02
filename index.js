@@ -13,7 +13,6 @@ const PostRouter = require('./routes/post');
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//const db = 'mongodb+srv://mn198:mmn198@cluster0.s5xbw.mongodb.net/forum?retryWrites=true&w=majority'
 mongoose.set('useFindAndModify', false);
 mongoose.connect('mongodb://mn198:mmn198@ds115166.mlab.com:15166/forum', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true})
 .then(() => console.log('connected to database'))
